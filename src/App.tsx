@@ -1,26 +1,32 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { AuthProvider } from './contexts/AuthContext';
+import { EventProvider } from './contexts/EventContext';
+import Navbar from './components/Navbar';
+import LoginForm from './components/LoginForm';
+import EventForm from './components/EventForm';
+import EventList from './components/EventList';
+import SignUpForm from './components/SignupForm';
+import { ProtectedRoute,PublicRoute } from './authentication/ProtectedRoute';
+import Error404 from './components/Error404';
+import DefaultLayout from './layout';
 
-function App() {
+const App = () => {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <AuthProvider>
+      <EventProvider>
+        <Router>
+          {/* <Navbar /> */}
+          <Routes>
+            <Route path="/login" element={<PublicRoute><LoginForm /> </PublicRoute>} />
+            <Route path="/signup" element={<PublicRoute><SignUpForm /> </PublicRoute>} />
+            <Route path="/" element={<ProtectedRoute><DefaultLayout /> </ProtectedRoute>} />
+            <Route path="*" element={<Error404 />} />
+          </Routes>
+        </Router>
+      </EventProvider>
+    </AuthProvider>
   );
-}
+};
 
 export default App;
