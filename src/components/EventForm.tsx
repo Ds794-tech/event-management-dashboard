@@ -1,90 +1,273 @@
-// src/components/EventForm.tsx
-import React, { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { useEvent } from '../contexts/EventContext';
-import { Event } from '../types/Event';
-import { isTimeOverlap } from '../utils';
-import { Button, Input, Select, DatePicker, message } from 'antd';
-import moment from 'moment';
+import React, { useEffect } from 'react';
+import { Modal, Form, Input, Select, DatePicker, Radio, Button, message } from 'antd';
+import { useForm, Controller } from 'react-hook-form';
+import dayjs from 'dayjs';
 
-const EventForm = ({ eventId }: { eventId?: string }) => {
-  const { addEvent, updateEvent, getEventById, events } = useEvent();
-  const [event, setEvent] = useState<Event | null>(null);
-  const { register, handleSubmit, setValue, formState: { errors } } = useForm<Event>({
+const { TextArea } = Input;
+const { Option } = Select;
+
+interface Event {
+  id?: string;
+  title: string;
+  description: string;
+  category: string;
+  eventType: 'Online' | 'In-Person';
+  location?: string;
+  eventLink?: string;
+  startDateTime: string;
+  endDateTime: string;
+  organizer?: string;
+}
+
+interface EventFormProps {
+  open: boolean;
+  onClose: () => void;
+  onSubmit: (event: Event) => void;
+  initialData?: Partial<Event>;
+}
+
+export const EventForm: React.FC<EventFormProps> = ({ open, onClose, onSubmit, initialData }) => {
+  const {
+    handleSubmit,
+    control,
+    watch,
+    reset,
+    formState: { errors },
+  } = useForm<Event>({
     defaultValues: {
-      startDateTime: moment().format('YYYY-MM-DDTHH:mm'),
-      endDateTime: moment().format('YYYY-MM-DDTHH:mm'),
+      title: '',
+      description: '',
+      category: '',
+      eventType: 'Online',
+      location: '',
+      eventLink: '',
+      startDateTime: '',
+      endDateTime: '',
+      organizer: '',
     },
   });
 
   useEffect(() => {
-    if (eventId) {
-      const existingEvent = getEventById(eventId);
-      if (existingEvent) {
-        setEvent(existingEvent);
-        setValue('title', existingEvent.title);
-        setValue('description', existingEvent.description);
-        setValue('startDateTime', existingEvent.startDateTime);
-        setValue('endDateTime', existingEvent.endDateTime);
-        setValue('category', existingEvent.category);
-      }
+    if (initialData) {
+      reset({
+        title: initialData?.title || '',
+        description: initialData?.description || '',
+        category: initialData?.category || '',
+        eventType: initialData?.eventType || 'Online',
+        location: initialData?.location || '',
+        eventLink: initialData?.eventLink || '',
+        startDateTime: initialData?.startDateTime || '',
+        endDateTime: initialData?.endDateTime || '',
+        organizer: initialData?.organizer || '',
+      });
+    } else {
+      reset({
+        title: '',
+        description: '',
+        category: '',
+        eventType: 'Online',
+        location: '',
+        eventLink: '',
+        startDateTime: '',
+        endDateTime: '',
+        organizer: '',
+      });
     }
-  }, [eventId, getEventById, setValue]);
+  }, [initialData, reset, open]);
 
-  const onSubmit = (data: Event) => {
-    // Check if the new event's time overlaps with existing events
-    if (isTimeOverlap(data, events)) {
-      message.error('The event time overlaps with an existing event.');
+
+  const eventType = watch('eventType');
+
+  const onFormSubmit = (data: Event) => {
+    if (dayjs(data.startDateTime).isSame(dayjs(data.endDateTime))) {
+      message.error('End Date & Time must not be same Start Date & Time');
+      alert('End Date & Time must not be same Start Date & Time');
       return;
     }
 
-    if (eventId) {
-      updateEvent(eventId, data);
-    } else {
-      addEvent(data);
+    if (dayjs(data.startDateTime).isAfter(dayjs(data.endDateTime))) {
+      message.error('End Date & Time must be After Start Date & Time');
+      alert('End Date & Time must not be After Start Date & Time');
+      return;
     }
+
+    onSubmit({
+      ...data,
+      id: initialData?.id || String(Date.now()),
+      organizer: data?.organizer || initialData?.organizer, // Replace with context value if needed
+    });
+
+    onClose();
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <Input {...register('title', { required: true })} placeholder="Event Title" />
-      {errors.title && <p>{errors.title.message}</p>}
+    <Modal
+      open={open}
+      title={initialData ? 'Edit Event' : 'Create Event'}
+      onCancel={onClose}
+      footer={null}
+      destroyOnClose
+    >
+      <Form layout="vertical" onFinish={handleSubmit(onFormSubmit)}>
+        <Form.Item
+          label="Title"
+          validateStatus={errors.title && 'error'}
+          help={errors.title?.message}
+        >
+          <Controller
+            name="title"
+            control={control}
+            rules={{ required: 'Title is required' }}
+            render={({ field }) => <Input {...field} placeholder="Event Title" />}
+          />
+        </Form.Item>
 
-      <Input.TextArea {...register('description', { required: true })} placeholder="Event Description" />
-      {errors.description && <p>{errors.description.message}</p>}
+        <Form.Item
+          label="Description"
+          validateStatus={errors.description && 'error'}
+          help={errors.description?.message}
+        >
+          <Controller
+            name="description"
+            control={control}
+            rules={{ required: 'Description is required' }}
+            render={({ field }) => (
+              <TextArea rows={3} {...field} placeholder="Event Description" />
+            )}
+          />
+        </Form.Item>
 
-      <Select {...register('category', { required: true })} placeholder="Category">
-        <Select.Option value="workshop">Workshop</Select.Option>
-        <Select.Option value="seminar">Seminar</Select.Option>
-        {/* Add more options here */}
-      </Select>
-      {errors.category && <p>{errors.category.message}</p>}
+        <Form.Item label="Event Type">
+          <Controller
+            name="eventType"
+            control={control}
+            render={({ field }) => (
+              <Radio.Group {...field}>
+                <Radio value="Online">Online</Radio>
+                <Radio value="In-Person">In-Person</Radio>
+              </Radio.Group>
+            )}
+          />
+        </Form.Item>
 
-      <DatePicker
-        {...register('startDateTime', { required: true })}
-        showTime
-        format="YYYY-MM-DD HH:mm"
-        placeholder="Start Date & Time"
-        value={moment(event?.startDateTime)}
-        onChange={(date) => setValue('startDateTime', date?.toISOString())}
-      />
-      {errors.startDateTime && <p>{errors.startDateTime.message}</p>}
+        {eventType === 'Online' ? (
+          <Form.Item
+            label="Event Link"
+            validateStatus={errors.eventLink && 'error'}
+            help={errors.eventLink?.message}
+          >
+            <Controller
+              name="eventLink"
+              control={control}
+              rules={{ required: 'Event Link is required for Online events' }}
+              render={({ field }) => <Input {...field} placeholder="https://..." />}
+            />
+          </Form.Item>
+        ) : (
+          <Form.Item
+            label="Location"
+            validateStatus={errors.location && 'error'}
+            help={errors.location?.message}
+          >
+            <Controller
+              name="location"
+              control={control}
+              rules={{ required: 'Location is required for In-Person events' }}
+              render={({ field }) => <Input {...field} placeholder="Event Location" />}
+            />
+          </Form.Item>
+        )}
 
-      <DatePicker
-        {...register('endDateTime', { required: true })}
-        showTime
-        format="YYYY-MM-DD HH:mm"
-        placeholder="End Date & Time"
-        value={moment(event?.endDateTime)}
-        onChange={(date) => setValue('endDateTime', date?.toISOString())}
-      />
-      {errors.endDateTime && <p>{errors.endDateTime.message}</p>}
+        <Form.Item
+          label="Category"
+          validateStatus={errors.category && 'error'}
+          help={errors.category?.message}
+        >
+          <Controller
+            name="category"
+            control={control}
+            rules={{ required: 'Category is required' }}
+            render={({ field }) => (
+              <Select
+                {...field}
+                placeholder="Select a category"
+                onChange={(value) => field.onChange(value)}
+                value={field.value || undefined}
+              >
+                <Option value="General">General</Option>
+                <Option value="Workshop">Workshop</Option>
+                <Option value="Meetup">Meetup</Option>
+              </Select>
+            )}
+          />
+        </Form.Item>
 
-      <Button type="primary" htmlType="submit">
-        {eventId ? 'Update Event' : 'Create Event'}
-      </Button>
-    </form>
+        <Form.Item
+          label="Start Date & Time"
+          validateStatus={errors.startDateTime && 'error'}
+          help={errors.startDateTime?.message}
+        >
+          <Controller
+            name="startDateTime"
+            control={control}
+            rules={{ required: 'Start date is required' }}
+            render={({ field }) => (
+              <DatePicker
+                showTime
+                style={{ width: '100%' }}
+                value={field.value ? dayjs(field.value) : null}
+                onChange={(value) =>
+                  field.onChange(value ? value.toISOString() : '')
+                }
+              />
+            )}
+          />
+        </Form.Item>
+
+        <Form.Item
+          label="End Date & Time"
+          validateStatus={errors.endDateTime && 'error'}
+          help={errors.endDateTime?.message}
+        >
+          <Controller
+            name="endDateTime"
+            control={control}
+            rules={{ required: 'End date is required' }}
+            render={({ field }) => (
+              <DatePicker
+                showTime
+                style={{ width: '100%' }}
+                value={field.value ? dayjs(field.value) : null}
+                onChange={(value) =>
+                  field.onChange(value ? value.toISOString() : '')
+                }
+              />
+            )}
+          />
+        </Form.Item>
+
+        <Form.Item
+          label="organizer"
+          validateStatus={errors.organizer && 'error'}
+          help={errors.organizer?.message}
+        >
+          <Controller
+            name="organizer"
+            control={control}
+            rules={{ required: 'organizer is required' }}
+            render={({ field }) => <Input {...field} placeholder="Event organizer" />}
+          />
+        </Form.Item>
+
+        <Form.Item>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+            <Button onClick={onClose}>Cancel</Button>
+            <Button type="primary" htmlType="submit">
+              {initialData ? 'Update' : 'Create'}
+            </Button>
+          </div>
+        </Form.Item>
+      </Form>
+    </Modal>
   );
 };
-
-export default EventForm;

@@ -5,6 +5,7 @@ import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 // Define validation schema using Yup
 const loginSchema = yup.object({
@@ -63,6 +64,12 @@ const LoginForm: React.FC = () => {
         <Button type="primary" htmlType="submit" block>
           Login
         </Button>
+      </Form.Item>
+      <Form.Item>
+        <span>Don't have an account? </span>
+        <Link to='/signup'>
+          Signup
+        </Link>
       </Form.Item>
     </Form>
   );

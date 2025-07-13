@@ -1,6 +1,7 @@
 // src/contexts/EventContext.tsx
 import React, { createContext, useState, useContext, ReactNode } from 'react';
 import { Event } from '../types/Event';
+import dayjs from 'dayjs';
 
 interface EventContextProps {
   events: Event[];
@@ -22,16 +23,7 @@ export const useEvent = () => {
 };
 
 export const EventProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [events, setEvents] = useState<Event[]>([{
-    title: 'Sample Event',
-    description: 'This is a sample event',
-    eventType: 'Online',
-    startDateTime: new Date().toISOString(),
-    endDateTime: new Date().toISOString(),
-    category: 'General',
-    id: '1',
-    organizer: 'Sample Organizer'
-  }]);
+  const [events, setEvents] = useState<Event[]>([]);
 
   const addEvent = (event: Event) => {
     setEvents([...events, event]);

@@ -5,6 +5,7 @@ import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 // Define validation schema using Yup
 const signUpSchema = yup.object({
@@ -39,7 +40,7 @@ const SignUpForm: React.FC = () => {
     const navigate = useNavigate()
 
     const onSubmit = (data: SignUpData) => {
-        signup(data.email, data.username,data.password);
+        signup(data.email, data.username, data.password);
         message.success('Sign-up successful');
         navigate('/login');
         setValue('email', '');
@@ -102,6 +103,12 @@ const SignUpForm: React.FC = () => {
                 <Button type="primary" htmlType="submit" block>
                     Sign Up
                 </Button>
+            </Form.Item>
+            <Form.Item>
+                <span>Do you have an Account? </span>
+                <Link to='/login'>
+                    Login
+                </Link>
             </Form.Item>
         </Form>
     );

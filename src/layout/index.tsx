@@ -1,67 +1,64 @@
-import React, { ReactNode } from 'react';
+import React, { useState } from 'react';
+import {
+  UploadOutlined,
+  UserOutlined,
+  VideoCameraOutlined,
+} from '@ant-design/icons';
+import { Layout, Menu, theme } from 'antd';
+import EventList from '../components/EventList';
 import HeaderComponent from './header/Header';
-import FooterComponent from './footer/Footer';
-import { Layout } from 'antd';
 
-const { Header, Footer, Sider, Content } = Layout;
+const { Sider, Content } = Layout;
 
+const App: React.FC = () => {
+  const [collapsed, setCollapsed] = useState(false);
+  const {
+    token: { colorBgContainer, borderRadiusLG },
+  } = theme.useToken();
 
-const headerStyle: React.CSSProperties = {
-  textAlign: 'center',
-  color: '#fff',
-  height: 64,
-  paddingInline: 48,
-  lineHeight: '64px',
-  backgroundColor: '#4096ff',
+  return (
+    <Layout>
+      <Sider trigger={null} collapsible collapsed={collapsed}>
+        <div className="demo-logo-vertical" />
+        <Menu
+          theme="dark"
+          mode="inline"
+          defaultSelectedKeys={['1']}
+          items={[
+            {
+              key: '1',
+              icon: <UserOutlined />,
+              label: 'nav 1',
+            },
+            {
+              key: '2',
+              icon: <VideoCameraOutlined />,
+              label: 'nav 2',
+            },
+            {
+              key: '3',
+              icon: <UploadOutlined />,
+              label: 'nav 3',
+            },
+          ]}
+        />
+      </Sider>
+      <Layout>
+        <HeaderComponent collapsed={collapsed} setCollapsed={setCollapsed}/>
+        <Content
+          style={{
+            margin: '24px 16px',
+            padding: 24,
+            minHeight: '100vh',
+            background: colorBgContainer,
+            borderRadius: borderRadiusLG,
+          }}
+        >
+          <EventList />
+        </Content>
+      </Layout>
+    </Layout>
+  );
 };
 
-const contentStyle: React.CSSProperties = {
-  textAlign: 'center',
-  minHeight: 120,
-  lineHeight: '120px',
-  color: '#fff',
-  backgroundColor: '#0958d9',
-};
-
-const siderStyle: React.CSSProperties = {
-  textAlign: 'center',
-  lineHeight: '120px',
-  color: '#fff',
-  backgroundColor: '#1677ff',
-};
-
-const layoutStyle = {
-  borderRadius: 8,
-  overflow: 'hidden',
-  width: 'calc(50% - 8px)',
-  maxWidth: 'calc(50% - 8px)',
-};
-
-const footerStyle: React.CSSProperties = {
-  textAlign: 'center',
-  color: '#fff',
-  backgroundColor: '#4096ff',
-};
-
-const DefaultLayout: React.FC = () => {
-    return (
-        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-            <HeaderComponent />
-            <main style={{ flex: 1, padding: '20px' }}>
-                <Layout style={layoutStyle}>
-                    <Sider  style={siderStyle}>
-                        Sider
-                    </Sider>
-                    <Layout>
-                        <Content style={contentStyle}>Content</Content>
-                        <Footer style={footerStyle}>Footer</Footer>
-                    </Layout>
-                </Layout>
-            </main>
-            <FooterComponent />
-        </div>
-    );
-}
-
-
-export default DefaultLayout;
+export default App;
