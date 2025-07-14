@@ -8,6 +8,7 @@ import dayjs, { Dayjs } from 'dayjs';
 import TimeOverLap from './TimeOverLap';
 import SearchAndFilter from './Search&Filter';
 import { useSearchParams } from 'react-router-dom';
+import type { ColumnType } from 'antd/es/table';
 import type { SortOrder } from 'antd/es/table/interface';
 
 const EventList = () => {
@@ -80,11 +81,15 @@ const EventList = () => {
     return matchesSearch && matchesType && matchesCategory && matchesDate;
   });
 
-  const columns = [
+
+  const columns: ColumnType<Event>[] = [
     {
       title: 'Title',
       dataIndex: 'title',
-      key: 'title', width: '100px'
+      key: 'title',
+      width: '100px',
+      sorter: (a: Event, b: Event) => a.title.localeCompare(b.title),
+      sortDirections: ['ascend', 'descend'] as SortOrder[],
     },
     { title: 'Description', dataIndex: 'description', key: 'description', width: '150px' },
     {
