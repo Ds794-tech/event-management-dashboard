@@ -1,55 +1,109 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Table, Button, Popconfirm, Modal } from 'antd';
 import { useEvent } from '../contexts/EventContext';
 import { Event } from '../types/Event';
 import { Card, Space } from 'antd';
 import { EventForm } from './EventForm';
-import dayjs from 'dayjs';
+import dayjs, { Dayjs } from 'dayjs';
 import TimeOverLap from './TimeOverLap';
+import SearchAndFilter from './Search&Filter';
+import { useSearchParams } from 'react-router-dom';
+import type { SortOrder } from 'antd/es/table/interface';
 
 const EventList = () => {
   const { events, deleteEvent, addEvent, updateEvent } = useEvent();
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedEventId, setSelectedEventId] = useState<Event | undefined>();
   const [modalOpen, setModalOpen] = useState(false)
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [search, setSearch] = useState<string>(() => searchParams.get("search") || "");
+  const [category, setCategory] = useState<string | undefined>(() => searchParams.get("category") || undefined);
+  const [eventType, setEventType] = useState<string | undefined>(() => searchParams.get("eventType") || undefined);
+  const [dateRange, setDateRange] = useState<[Dayjs | null, Dayjs | null]>(() => {
+    const start = searchParams.get("startDate");
+    const end = searchParams.get("endDate");
+    return [start ? dayjs(start) : null, end ? dayjs(end) : null];
+  });
+
+  useEffect(() => {
+    const params: any = {};
+    if (search) params.search = search;
+    if (category) params.category = category;
+    if (eventType) params.eventType = eventType;
+    if (dateRange[0]) params.startDate = dateRange[0].toISOString();
+    if (dateRange[1]) params.endDate = dateRange[1].toISOString();
+
+    setSearchParams(params);
+  }, [search, category, eventType, dateRange]);
 
   const handleDelete = (id: string) => {
     deleteEvent(id);
   };
 
-  const onSubmit = (event: Event) => {
-    // Ensure id is always a string
+  const onSubmit = (event: Event): boolean => {
     const eventWithId: Event = {
       ...event,
       id: event.id ?? crypto.randomUUID(),
       organizer: event.organizer ?? "",
     };
+
     if (!selectedEventId) {
       if (isOverlappingEvent(event)) {
-        setModalOpen(true)
-        setModalVisible(true)
-        // alert('Event time overlaps with an existing event. Please choose a different time.')
-        return;
+        setModalOpen(true);
+        return false; // failed
       } else {
         addEvent(eventWithId);
+        setModalVisible(false);
+        return true; // success
       }
     } else {
       if (isOverlappingEvent(event, selectedEventId.id)) {
-        setModalOpen(true)
-        setModalVisible(true)
-        // alert('Event time overlaps with an existing event. Please choose a different time.')
-        return;
+        setModalOpen(true);
+        return false;
       } else {
         updateEvent(selectedEventId.id, eventWithId);
+        setModalVisible(false);
+        return true;
       }
     }
-  }
+  };
+
+  const filteredEvents = events.filter((event) => {
+    const matchesSearch = event.title.toLowerCase().includes(search.toLowerCase()) ||
+      event.description.toLowerCase().includes(search.toLowerCase());
+    const matchesType = !eventType || event.eventType === eventType;
+    const matchesCategory = !category || event.category === category;
+    const matchesDate =
+      (!dateRange[0] || dayjs(event.startDateTime).isAfter(dateRange[0])) &&
+      (!dateRange[1] || dayjs(event.endDateTime).isBefore(dateRange[1]));
+
+    return matchesSearch && matchesType && matchesCategory && matchesDate;
+  });
 
   const columns = [
-    { title: 'Title', dataIndex: 'title', key: 'title', width: '100px' },
+    {
+      title: 'Title',
+      dataIndex: 'title',
+      key: 'title', width: '100px'
+    },
     { title: 'Description', dataIndex: 'description', key: 'description', width: '150px' },
-    { title: 'Start Date Time', dataIndex: 'startDateTime', key: 'startDateTime', width: '100px' },
-    { title: 'End Date Time', dataIndex: 'endDateTime', key: 'endDateTime' },
+    {
+      title: 'Start Date Time',
+      dataIndex: 'startDateTime',
+      key: 'startDateTime',
+      width: '150px',
+      sorter: (a: Event, b: Event) =>
+        dayjs(a.startDateTime).unix() - dayjs(b.startDateTime).unix(),
+      sortDirections: ['ascend', 'descend'] as SortOrder[],
+      render: (text: string) => dayjs(text).format('YYYY-MM-DD HH:mm'),
+    },
+    {
+      title: 'End Date Time',
+      dataIndex: 'endDateTime',
+      key: 'endDateTime',
+      width: '150px',
+      render: (text: string) => dayjs(text).format('YYYY-MM-DD HH:mm'),
+    },
     { title: 'Category', dataIndex: 'category', key: 'category' },
     { title: 'Event Type', dataIndex: 'eventType', key: 'eventType' },
     {
@@ -111,12 +165,43 @@ const EventList = () => {
     });
   };
 
+  const handleDateRangeChange = (dates: [Dayjs | null, Dayjs | null] | null) => {
+    const [start, end] = dates || [null, null];
+    setDateRange([start, end]);
+
+    const updatedParams: any = {};
+    if (start) updatedParams.startDate = start.toISOString();
+    if (end) updatedParams.endDate = end.toISOString();
+
+    // Preserve other filters
+    searchParams.forEach((value, key) => {
+      if (!updatedParams[key]) {
+        updatedParams[key] = value;
+      }
+    });
+
+    setSearchParams(updatedParams);
+  };
+
   return (
     <>
       <Space direction="vertical" size="middle" style={{ display: 'flex' }}>
         <Card title={
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '20px 0px' }}>
             <span>Event List</span>
+            <div style={{ marginTop: '30px' }}>
+              <SearchAndFilter
+                search={search}
+                setSearch={setSearch}
+                eventType={eventType}
+                setEventType={setEventType}
+                category={category}
+                setCategory={setCategory}
+                dateRange={dateRange}
+                setDateRange={setDateRange}
+                handleFilterChange={() => { }} // Provide a no-op or your actual handler here
+              />
+            </div>
             <Button type="primary" onClick={() => eventHandler(undefined)}>Create Event</Button>
           </div>
         }
@@ -124,7 +209,7 @@ const EventList = () => {
           style={{ width: '100%' }}
         >
           <Table
-            dataSource={events}
+            dataSource={filteredEvents}
             columns={columns}
             rowKey="id"
             pagination={{ pageSize: 5 }}
