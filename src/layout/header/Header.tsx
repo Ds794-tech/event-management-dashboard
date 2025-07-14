@@ -13,6 +13,11 @@ const HeaderComponent: React.FC<{ collapsed: boolean; setCollapsed: React.Dispat
         token: { colorBgContainer },
     } = theme.useToken();
 
+    const logOutHandler = () => {
+        localStorage.removeItem('loggedIn');
+        window.location.href = '/login';
+    };
+
     return (
         <Header style={{ padding: 0, background: colorBgContainer }}>
             <Button
@@ -26,6 +31,13 @@ const HeaderComponent: React.FC<{ collapsed: boolean; setCollapsed: React.Dispat
                 }}
             />
             <span style={{ fontSize: 20, fontWeight: 'bold' }}>Event Management Dashboard</span>
+            <Button
+                type="primary"
+                style={{ float: 'right', marginRight: 20, marginTop: 20 }}
+                onClick={logOutHandler}
+            >
+                logout
+            </Button>
         </Header>
     );
 }

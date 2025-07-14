@@ -27,25 +27,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = (email: string, password: string) => {
     const users = JSON.parse(localStorage.getItem('users') || '[]');
     const foundUser = users.find((user: { email: string; password: string }) =>
-      user.email === email
+      user.email === email && user.password === password
     );
 
 
     if (foundUser) {
       setUser(foundUser._id);
-      localStorage.setItem('loggedIn', JSON.stringify({ email:foundUser.email, username: foundUser.username, _id: foundUser._id }));
+      localStorage.setItem('loggedIn', JSON.stringify({ email: foundUser.email, username: foundUser.username, _id: foundUser._id }));
     } else {
       alert('Invalid username or password');
     }
   };
 
-  const signup = (email: string, username: string) => {
+  const signup = (email: string, username: string, password: string) => {
     const users = JSON.parse(localStorage.getItem('users') || '[]');
     if (users.some((user: { email: string }) => user.email === email)) {
       alert('Username already exists');
       return;
     }
-    users.push({ email, username,  _id: uuidv4() });
+    users.push({ email, username, password, _id: uuidv4() });
     localStorage.setItem('users', JSON.stringify(users));
   };
 

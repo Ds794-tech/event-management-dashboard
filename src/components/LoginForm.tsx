@@ -1,13 +1,14 @@
 import React from 'react';
-import { Input, Button, Form, message } from 'antd';
+import { Input, Button, Form, message, Card, Typography } from 'antd';
 import { useForm, Controller } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useAuth } from '../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
-import { Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { LockOutlined, MailOutlined } from '@ant-design/icons';
 
-// Define validation schema using Yup
+const { Title, Text } = Typography;
+
 const loginSchema = yup.object({
   email: yup
     .string()
@@ -24,7 +25,12 @@ interface LoginData {
 const LoginForm: React.FC = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const { control, handleSubmit, formState: { errors } } = useForm<LoginData>({
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginData>({
     resolver: yupResolver(loginSchema),
   });
 
@@ -35,44 +41,86 @@ const LoginForm: React.FC = () => {
   };
 
   return (
-    <Form onFinish={handleSubmit(onSubmit)} style={{ maxWidth: 400, margin: '0 auto' }}>
-      <Form.Item
-        label="Email"
-        validateStatus={errors.email ? 'error' : 'success'}
-        help={errors.email?.message}
-      >
-        <Controller
-          name="email"
-          control={control}
-          render={({ field }) => <Input {...field} />}
-        />
-      </Form.Item>
+    <div style={styles.container}>
+      <Card style={styles.card} bordered={false}>
+        <Title level={3} style={{ textAlign: 'center', marginBottom: '2rem' }}>
+          Welcome Back
+        </Title>
 
-      <Form.Item
-        label="Password"
-        validateStatus={errors.password ? 'error' : 'success'}
-        help={errors.password?.message}
-      >
-        <Controller
-          name="password"
-          control={control}
-          render={({ field }) => <Input.Password {...field} />}
-        />
-      </Form.Item>
+        <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
+          {/* Email Field */}
+          <Form.Item
+            label="Email"
+            validateStatus={errors.email ? 'error' : ''}
+            help={errors.email?.message}
+          >
+            <Controller
+              name="email"
+              control={control}
+              render={({ field }) => (
+                <Input
+                  {...field}
+                  placeholder="Enter your email"
+                  prefix={<MailOutlined />}
+                  size="large"
+                />
+              )}
+            />
+          </Form.Item>
 
-      <Form.Item>
-        <Button type="primary" htmlType="submit" block>
-          Login
-        </Button>
-      </Form.Item>
-      <Form.Item>
-        <span>Don't have an account? </span>
-        <Link to='/signup'>
-          Signup
-        </Link>
-      </Form.Item>
-    </Form>
+          {/* Password Field */}
+          <Form.Item
+            label="Password"
+            validateStatus={errors.password ? 'error' : ''}
+            help={errors.password?.message}
+          >
+            <Controller
+              name="password"
+              control={control}
+              render={({ field }) => (
+                <Input.Password
+                  {...field}
+                  placeholder="Enter your password"
+                  prefix={<LockOutlined />}
+                  size="large"
+                />
+              )}
+            />
+          </Form.Item>
+
+          <Form.Item>
+            <Button type="primary" htmlType="submit" block size="large">
+              Login
+            </Button>
+          </Form.Item>
+
+          <div style={{ textAlign: 'center' }}>
+            <Text type="secondary">
+              Don’t have an account? <Link to="/signup">Signup</Link>
+            </Text>
+          </div>
+        </Form>
+      </Card>
+    </div>
   );
+};
+
+const styles: { [key: string]: React.CSSProperties } = {
+  container: {
+    minHeight: '100vh',
+    background: '#f0f2f5',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: '2rem',
+  },
+  card: {
+    width: 400,
+    padding: '2.5rem 2rem',
+    borderRadius: 12,
+    boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+    backgroundColor: '#ffffff',
+  },
 };
 
 export default LoginForm;
