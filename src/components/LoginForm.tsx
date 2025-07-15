@@ -48,7 +48,6 @@ const LoginForm: React.FC = () => {
         </Title>
 
         <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
-          {/* Email Field */}
           <Form.Item
             label="Email"
             validateStatus={errors.email ? 'error' : ''}
@@ -67,8 +66,6 @@ const LoginForm: React.FC = () => {
               )}
             />
           </Form.Item>
-
-          {/* Password Field */}
           <Form.Item
             label="Password"
             validateStatus={errors.password ? 'error' : ''}

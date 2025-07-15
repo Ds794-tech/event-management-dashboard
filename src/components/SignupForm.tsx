@@ -62,7 +62,6 @@ const SignUpForm: React.FC = () => {
         </Title>
 
         <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
-          {/* Email */}
           <Form.Item
             label="Email"
             validateStatus={errors.email ? 'error' : ''}
@@ -81,8 +80,6 @@ const SignUpForm: React.FC = () => {
               )}
             />
           </Form.Item>
-
-          {/* Username */}
           <Form.Item
             label="Username"
             validateStatus={errors.username ? 'error' : ''}
@@ -101,8 +98,6 @@ const SignUpForm: React.FC = () => {
               )}
             />
           </Form.Item>
-
-          {/* Password */}
           <Form.Item
             label="Password"
             validateStatus={errors.password ? 'error' : ''}
@@ -121,8 +116,6 @@ const SignUpForm: React.FC = () => {
               )}
             />
           </Form.Item>
-
-          {/* Confirm Password */}
           <Form.Item
             label="Confirm Password"
             validateStatus={errors.confirmPassword ? 'error' : ''}
@@ -141,13 +134,11 @@ const SignUpForm: React.FC = () => {
               )}
             />
           </Form.Item>
-
           <Form.Item>
             <Button type="primary" htmlType="submit" block size="large">
               Sign Up
             </Button>
           </Form.Item>
-
           <div style={{ textAlign: 'center' }}>
             <Text type="secondary">
               Already have an account? <Link to="/login">Login</Link>

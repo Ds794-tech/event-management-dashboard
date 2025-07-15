@@ -43,11 +43,11 @@ const EventList = () => {
     if (!selectedEventId) {
       if (isOverlappingEvent(event)) {
         setModalOpen(true);
-        return false; // failed
+        return false;
       } else {
         addEvent(eventWithId);
         setModalVisible(false);
-        return true; // success
+        return true;
       }
     } else {
       if (isOverlappingEvent(event, selectedEventId.id)) {
@@ -106,8 +106,6 @@ const EventList = () => {
         return record.eventType === 'Online' ?
           <div>
             {record.eventLink ? <a href={record.eventLink} target="_blank" rel="noopener noreferrer">{record.eventLink}</a> : 'N/A'}
-            {/* If you want to show the link text as "View Event" */}
-            {/* {record.eventLink ? <a href={record.eventLink} target="_blank" rel="noopener noreferrer">View Event</a> : 'N/A'} */}
           </div>
           :
           'N/A';
@@ -137,7 +135,7 @@ const EventList = () => {
     const newStart = dayjs(newEvent.startDateTime);
     const newEnd = dayjs(newEvent.endDateTime);
     return events.some((event: Event) => {
-      if (excludeId && event.id === excludeId) return false; // skip the event being edited
+      if (excludeId && event.id === excludeId) return false;
 
       const existingStart = dayjs(event.startDateTime);
       const existingEnd = dayjs(event.endDateTime);

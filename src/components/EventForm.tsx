@@ -1,8 +1,7 @@
 import React, { useEffect } from 'react';
-import { Modal, Form, Input, Select, DatePicker, Radio, Button, message } from 'antd';
+import { Modal, Form, Input, Select, DatePicker, Radio, Button } from 'antd';
 import { useForm, Controller } from 'react-hook-form';
 import dayjs from 'dayjs';
-import { Modal as AntdModal } from 'antd'; 
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -98,35 +97,13 @@ export const EventForm: React.FC<EventFormProps> = ({ open, onClose, onSubmit, i
 
 };
 
-  // const onFormSubmit = (data: Event) => {
-  //   if (dayjs(data.startDateTime).isSame(dayjs(data.endDateTime))) {
-  //     message.error('End Date & Time must not be same Start Date & Time');
-  //     alert('End Date & Time must not be same Start Date & Time');
-  //     return;
-  //   }
-
-  //   if (dayjs(data.startDateTime).isAfter(dayjs(data.endDateTime))) {
-  //     message.error('End Date & Time must be After Start Date & Time');
-  //     alert('End Date & Time must not be After Start Date & Time');
-  //     return;
-  //   }
-
-  //   onSubmit({
-  //     ...data,
-  //     id: initialData?.id || String(Date.now()),
-  //     organizer: data?.organizer || initialData?.organizer, // Replace with context value if needed
-  //   });
-
-  //   onClose();
-  // };
-
   return (
     <Modal
       open={open}
       title={initialData ? 'Edit Event' : 'Create Event'}
       onCancel={onClose}
       footer={null}
-    // destroyOnClose
+      destroyOnClose
     >
       <Form layout="vertical" onFinish={handleSubmit(onFormSubmit)}>
         <Form.Item

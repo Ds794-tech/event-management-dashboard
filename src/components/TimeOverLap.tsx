@@ -1,6 +1,4 @@
 import { Modal } from "antd";
-import React from "react";
-
 
 type TimeOverLapProps = {
     modalOpen: boolean;
