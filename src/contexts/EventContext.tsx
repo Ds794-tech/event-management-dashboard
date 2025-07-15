@@ -33,7 +33,29 @@ export const useEvent = () => {
 };
 
 export const EventProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [events, setEvents] = useState<Event[]>([]);
+  const [events, setEvents] = useState<Event[]>([
+    {
+      id: '1',
+      title: 'Sample Event',
+      description: 'This is a sample event description.',
+      startDateTime: dayjs().add(1, 'day').toISOString(),
+      endDateTime: dayjs().add(1, 'day').add(2, 'hours').toISOString(),
+      category: 'General',
+      eventType: 'Online',
+      organizer: 'Organizer Name',
+    },
+    {
+      id: '2',
+      title: 'Another Event',
+      description: 'This is another event description.',
+      startDateTime: dayjs().add(2, 'days').toISOString(),
+      endDateTime: dayjs().add(2, 'days').add(3, 'hours').toISOString(),
+      category: 'Workshop',
+      eventType: 'In-Person',
+      organizer: 'Another Organizer',
+    },
+  ]);
+  
   const [filters, setFiltersState] = useState<FilterState>({
     search: '',
     category: undefined,
