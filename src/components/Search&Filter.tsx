@@ -1,4 +1,4 @@
-import { Form, Input, Select, DatePicker, Button } from 'antd';
+import { Form, Input, Select, DatePicker } from 'antd';
 import { Dayjs } from 'dayjs';
 import React from 'react';
 
@@ -11,7 +11,6 @@ interface SearchAndFilterProps {
     setEventType: (value: string | undefined) => void;
     category: string | undefined;
     setCategory: (value: string | undefined) => void;
-    handleFilterChange: () => void;
     setDateRange: (value: [Dayjs | null, Dayjs | null]) => void;
     dateRange: [Dayjs | null, Dayjs | null];
 }
@@ -23,12 +22,11 @@ const SearchAndFilter: React.FC<SearchAndFilterProps> = ({
     setEventType,
     category,
     setCategory,
-    handleFilterChange,
     setDateRange,
     dateRange
 }) => {
     return (
-        <div style={{ display: 'flex', gap: '40px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '30px', alignItems: 'center' }}>
             <Form.Item>
                 <Input
                     placeholder="Search by title or description"

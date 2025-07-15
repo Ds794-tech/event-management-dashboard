@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Table, Button, Popconfirm, Modal } from 'antd';
+import { Table, Button, Popconfirm } from 'antd';
 import { useEvent } from '../contexts/EventContext';
 import { Event } from '../types/Event';
 import { Card, Space } from 'antd';
 import { EventForm } from './EventForm';
-import dayjs, { Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 import TimeOverLap from './TimeOverLap';
 import SearchAndFilter from './Search&Filter';
 import { useSearchParams } from 'react-router-dom';
@@ -12,30 +12,22 @@ import type { ColumnType } from 'antd/es/table';
 import type { SortOrder } from 'antd/es/table/interface';
 
 const EventList = () => {
-  const { events, deleteEvent, addEvent, updateEvent } = useEvent();
+  const { events, deleteEvent, addEvent, updateEvent, filteredEvents, filters, setFilters } = useEvent();
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedEventId, setSelectedEventId] = useState<Event | undefined>();
   const [modalOpen, setModalOpen] = useState(false)
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [search, setSearch] = useState<string>(() => searchParams.get("search") || "");
-  const [category, setCategory] = useState<string | undefined>(() => searchParams.get("category") || undefined);
-  const [eventType, setEventType] = useState<string | undefined>(() => searchParams.get("eventType") || undefined);
-  const [dateRange, setDateRange] = useState<[Dayjs | null, Dayjs | null]>(() => {
-    const start = searchParams.get("startDate");
-    const end = searchParams.get("endDate");
-    return [start ? dayjs(start) : null, end ? dayjs(end) : null];
-  });
+  const [,setSearchParams] = useSearchParams();
 
   useEffect(() => {
     const params: any = {};
-    if (search) params.search = search;
-    if (category) params.category = category;
-    if (eventType) params.eventType = eventType;
-    if (dateRange[0]) params.startDate = dateRange[0].toISOString();
-    if (dateRange[1]) params.endDate = dateRange[1].toISOString();
+    if (filters.search) params.search = filters.search;
+    if (filters.category) params.category = filters.category;
+    if (filters.eventType) params.eventType = filters.eventType;
+    if (filters.startDate) params.startDate = filters.startDate;
+    if (filters.endDate) params.endDate = filters.endDate;
 
     setSearchParams(params);
-  }, [search, category, eventType, dateRange]);
+  }, [filters, setSearchParams]);
 
   const handleDelete = (id: string) => {
     deleteEvent(id);
@@ -68,19 +60,6 @@ const EventList = () => {
       }
     }
   };
-
-  const filteredEvents = events.filter((event) => {
-    const matchesSearch = event.title.toLowerCase().includes(search.toLowerCase()) ||
-      event.description.toLowerCase().includes(search.toLowerCase());
-    const matchesType = !eventType || event.eventType === eventType;
-    const matchesCategory = !category || event.category === category;
-    const matchesDate =
-      (!dateRange[0] || dayjs(event.startDateTime).isAfter(dateRange[0])) &&
-      (!dateRange[1] || dayjs(event.endDateTime).isBefore(dateRange[1]));
-
-    return matchesSearch && matchesType && matchesCategory && matchesDate;
-  });
-
 
   const columns: ColumnType<Event>[] = [
     {
@@ -170,45 +149,35 @@ const EventList = () => {
     });
   };
 
-  const handleDateRangeChange = (dates: [Dayjs | null, Dayjs | null] | null) => {
-    const [start, end] = dates || [null, null];
-    setDateRange([start, end]);
-
-    const updatedParams: any = {};
-    if (start) updatedParams.startDate = start.toISOString();
-    if (end) updatedParams.endDate = end.toISOString();
-
-    // Preserve other filters
-    searchParams.forEach((value, key) => {
-      if (!updatedParams[key]) {
-        updatedParams[key] = value;
-      }
-    });
-
-    setSearchParams(updatedParams);
-  };
-
   return (
     <>
       <Space direction="vertical" size="middle" style={{ display: 'flex' }}>
         <Card title={
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '20px 0px' }}>
-            <span>Event List</span>
-            <div style={{ marginTop: '30px' }}>
+          <>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '20px 0px' }}>
+              <span>Event List</span>
+              <Button type="primary" onClick={() => eventHandler(undefined)}>Create Event</Button>
+            </div>
+            <div>
+              <h4 style={{ marginBottom: 10 }}>Filters :</h4>
               <SearchAndFilter
-                search={search}
-                setSearch={setSearch}
-                eventType={eventType}
-                setEventType={setEventType}
-                category={category}
-                setCategory={setCategory}
-                dateRange={dateRange}
-                setDateRange={setDateRange}
-                handleFilterChange={() => { }} // Provide a no-op or your actual handler here
+                search={filters.search}
+                setSearch={(val) => setFilters({ search: val })}
+                category={filters.category}
+                setCategory={(val) => setFilters({ category: val })}
+                eventType={filters.eventType}
+                setEventType={(val) => setFilters({ eventType: val })}
+                dateRange={[
+                  filters.startDate ? dayjs(filters.startDate) : null,
+                  filters.endDate ? dayjs(filters.endDate) : null,
+                ]}
+                setDateRange={(range) => setFilters({
+                  startDate: range[0]?.toISOString(),
+                  endDate: range[1]?.toISOString()
+                })}
               />
             </div>
-            <Button type="primary" onClick={() => eventHandler(undefined)}>Create Event</Button>
-          </div>
+          </>
         }
           size="small"
           style={{ width: '100%' }}
