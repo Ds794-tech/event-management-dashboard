@@ -1,10 +1,11 @@
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
+import { NavigateFunction } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 
 interface AuthContextType {
   user: string | null;
   login: (email: string, password: string) => void;
-  signup: (email: string, username: string, password: string) => void;
+  signup: (email: string, username: string, password: string, navigate: NavigateFunction) => void;
   logout: () => void;
 }
 
@@ -39,7 +40,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const signup = (email: string, username: string, password: string) => {
+  const signup = (email: string, username: string, password: string, navigate: NavigateFunction) => {
     const users = JSON.parse(localStorage.getItem('users') || '[]');
     if (users.some((user: { email: string }) => user.email === email)) {
       alert('Username already exists');
@@ -47,6 +48,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
     users.push({ email, username, password, _id: uuidv4() });
     localStorage.setItem('users', JSON.stringify(users));
+    navigate('/login');
+    alert('Registered successful');
   };
 
   const logout = () => {

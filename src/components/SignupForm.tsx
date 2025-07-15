@@ -46,11 +46,8 @@ const SignUpForm: React.FC = () => {
   });
 
   const onSubmit = (data: SignUpData) => {
-    signup(data.email, data.username, data.password);
+    signup(data.email, data.username, data.password, navigate);
     message.success('Sign-up successful');
-    navigate('/login');
-
-    // Optional: clear fields after submit
     setValue('email', '');
     setValue('username', '');
     setValue('password', '');
